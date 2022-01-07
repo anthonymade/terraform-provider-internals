@@ -7,26 +7,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccResourceScaffolding(t *testing.T) {
-	t.Skip("resource not yet implemented, remove this once you add your own code")
-
+func TestAccResourcePrefixedUniqueId(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceScaffolding,
+				Config: testAccResourcePrefixedUniqueId,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestMatchResourceAttr(
-						"scaffolding_resource.foo", "sample_attribute", regexp.MustCompile("^ba")),
+						"internals_prefixed_unique_id.foo", "id", regexp.MustCompile("^bar\\d{18}[0-9a-f]{8}$")),
 				),
 			},
 		},
 	})
 }
 
-const testAccResourceScaffolding = `
-resource "scaffolding_resource" "foo" {
-  sample_attribute = "bar"
+const testAccResourcePrefixedUniqueId = `
+resource "internals_prefixed_unique_id" "foo" {
+  prefix = "bar"
 }
 `

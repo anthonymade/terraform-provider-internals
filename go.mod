@@ -1,4 +1,4 @@
-module github.com/hashicorp/terraform-provider-scaffolding
+module github.com/anthonymade/terraform-provider-internals
 
 go 1.15
 

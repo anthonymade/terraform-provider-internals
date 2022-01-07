@@ -1,3 +1,3 @@
-resource "scaffolding_resource" "example" {
-  sample_attribute = "foo"
+resource "internals_prefixed_unique_id" "example" {
+  prefix = "foo"
 }
