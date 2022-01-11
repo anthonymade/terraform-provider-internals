@@ -7,20 +7,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"strings"
 )
 
 func prefixedUniqueId() *schema.Resource {
 	return &schema.Resource{
 		Description: `
-The resource ` + "`internals_prefixed_unique_id`" + ` exposes the internal sdk helper function
+The resource ` + "`internals_prefixed_unique_id`" + ` makes available the sdk helper function
 ` + "`PrefixedUniqueId`" + ` which is used by resources such as aws_s3_bucket to name a bucket from
 the bucket_prefix argument.
 
-The prefix will be appended with ` + fmt.Sprintf("%v", resource.UniqueIDSuffixLength) + `
-characters.
+The prefix will be appended with ` + fmt.Sprintf("%v", resource.UniqueIDSuffixLength) + ` characters.
 
-This resource was created to solve the issue of circular dependencies i.e. when using bucket_prefix and
-requiring a logging configuration to use the bucket name for the target_prefix.
+This resource was created to solve the issue of circular dependencies i.e. when using ` + "`bucket_prefix`" + ` and
+requiring a logging configuration to use the bucket name for the ` + "`target_prefix`" + `.
 
 To use this resource, define it and use the ` + "`id`" + ` attribute to set resource name/id instead
 of using the built in *_prefix arguments.
@@ -36,7 +36,7 @@ of using the built in *_prefix arguments.
 
 		Schema: map[string]*schema.Schema{
 			"prefix": {
-				Description: "Id prefix",
+				Description: "Id prefix, set to empty string to disable prefix",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -69,6 +69,15 @@ func resourcePrefixedUniqueIdDelete(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourcePrefixedUniqueIdImport(ctx context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
-	tflog.Trace(ctx, fmt.Sprintf("importing an internals_prefixed_unique_id resource with id %v", d.Get("id").(string)))
+	prefix := ""
+	id := d.Get("id").(string)
+	pieces := strings.Split(id, ",")
+	if len(pieces) > 1 {
+		prefix = strings.Join(pieces[0:len(pieces)-1], ",")
+		id = prefix + pieces[len(pieces)-1]
+	}
+	tflog.Trace(ctx, fmt.Sprintf("importing an internals_prefixed_unique_id resource with id %v and prefix %v", id, prefix))
+	d.SetId(id)
+	d.Set("prefix", prefix)
 	return []*schema.ResourceData{d}, nil
 }

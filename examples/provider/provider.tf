@@ -1,1 +1,3 @@
-provider "internals" {}
+provider "internals" {
+  source = "anthonymade/internals"
+}
